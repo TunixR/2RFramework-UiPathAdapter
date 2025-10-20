@@ -2,6 +2,7 @@ using System;
 using System.Activities;
 using System.Collections.Generic;
 using System.ComponentModel;
+using _2RFramework.Models;
 using System.Linq;
 using _2RFramework.Activities.Properties;
 using _2RFramework.Activities.Utilities;
@@ -49,6 +50,9 @@ public class Task : NativeActivity
     /// <inheritdoc />
     protected override void Execute(NativeActivityContext context)
     {
+        // Load environment variables from .env file
+        EnvReader.Load(".env");
+
         // If there are no activities, just return
         if (Activities == null || Activities.Count == 0) return;
 
@@ -98,14 +102,30 @@ public class Task : NativeActivity
             .Select(a => TaskUtils.GetActivityInfo(a, workflowVariables))
             .ToList();
         var failedActivity = TaskUtils.GetActivityInfo(Activities[_currentActivityIndex], workflowVariables);
+        var reversedAct = Activities;
+        reversedAct.Reverse();
+        var futureActivities = reversedAct.Take(_currentActivityIndex)
+            .Select(a => TaskUtils.GetActivityInfo(a, workflowVariables))
+            .ToList();
 
-        Console.WriteLine(
-            $"Exception in Task '{taskNameValue}', Activity #{_currentActivityIndex}: {propagatedException.Message}"
-            );
-        Console.WriteLine($"Failed Activity: {JsonConvert.SerializeObject(failedActivity)}");
-        Console.WriteLine($"Previous act: {JsonConvert.SerializeObject(previousActivities)}");
+        var message = new
+        {
+            code = propagatedException.Message,
+            variables = workflowVariables,
+            details = new
+            {
+                taskName = taskNameValue,
+                previousActivities,
+                failedActivity,
+                futureActivities,
+            }
+        };
 
-        // TODO: Invoke 2RAgent API to handle the exception and process outputs
+        string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT");
+        var response = TaskUtils.CallRecoveryAPI(message, apiEndpoint, null);
+
+        // TODO: parse activity to continue from and changes to robot
+
         // Mark the exception as handled
         faultContext.HandleFault();
 

@@ -17,6 +17,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UiPath.Shared.Activities", 
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UiPath.Shared.Activities.Design", "Shared\UiPath.Shared.Activities.Design\UiPath.Shared.Activities.Design.shproj", "{DF9C43F0-ADD3-4FBF-995E-84B92F9CBF25}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_2RFramework.Test", "2RFramework\_2RFramework.Test\_2RFramework.Test.csproj", "{528672FD-A448-1F57-1BEA-9182F90351B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{4634FC74-F82A-4013-9895-5F2522D6E710}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4634FC74-F82A-4013-9895-5F2522D6E710}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4634FC74-F82A-4013-9895-5F2522D6E710}.Release|Any CPU.Build.0 = Release|Any CPU
+		{528672FD-A448-1F57-1BEA-9182F90351B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{528672FD-A448-1F57-1BEA-9182F90351B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{528672FD-A448-1F57-1BEA-9182F90351B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{528672FD-A448-1F57-1BEA-9182F90351B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +51,7 @@ Global
 		{4634FC74-F82A-4013-9895-5F2522D6E710} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{4546856D-EA50-45C6-9419-EEEACB5A80AA} = {1C9CA449-2279-4C93-A7DD-454F2EDB399D}
 		{DF9C43F0-ADD3-4FBF-995E-84B92F9CBF25} = {1C9CA449-2279-4C93-A7DD-454F2EDB399D}
+		{528672FD-A448-1F57-1BEA-9182F90351B6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7BF298C7-9A31-48FC-893A-B4560941C6DF}

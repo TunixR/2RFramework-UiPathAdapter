@@ -1,8 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Activities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
+using System.Windows.Markup;
 using Activity = System.Activities.Activity;
 
 namespace _2RFramework.Activities.Utilities;
@@ -152,5 +156,33 @@ internal static class TaskUtils
             }
 
         return workflowVariables;
+    }
+
+    public static object CallRecoveryAPI(object message, string uri, params object[]? args)
+    {
+        HttpClient client = new();
+        client.BaseAddress = new Uri(uri);
+        client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+
+        var content = JsonConvert.SerializeObject(message);
+        var buffer = System.Text.Encoding.UTF8.GetBytes(content);
+        var byteContent = new ByteArrayContent(buffer);
+        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        HttpResponseMessage response = client.PostAsync(uri, byteContent).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
+        client.Dispose();
+        if (response.IsSuccessStatusCode)
+        {
+            // Parse the response body.
+            var dataObjects = response.Content.ReadAsStringAsync().Result; 
+            // TODO: PARSE RESPONSE
+            return dataObjects;
+        }
+        else
+        {
+            // TODO: HALT ROBOT EXECUTION AND LOG ERROR
+            throw new Exception("API call failed with status code: " + response.StatusCode);
+        }
     }
 }

@@ -8,8 +8,8 @@
   <PropertyGroup>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DocumentationFile>bin\$(Configuration)\_2RFramework.Activities.xml</DocumentationFile>
-    <AssemblyVersion>1.0.28.97</AssemblyVersion>
-    <FileVersion>1.0.28.97</FileVersion>
+    <AssemblyVersion>1.0.29.104</AssemblyVersion>
+    <FileVersion>1.0.29.104</FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
