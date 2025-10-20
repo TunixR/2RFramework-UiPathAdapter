@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Windows.Markup;
 using Activity = System.Activities.Activity;
 
 namespace _2RFramework.Activities.Utilities;
@@ -175,7 +174,7 @@ internal static class TaskUtils
         if (response.IsSuccessStatusCode)
         {
             // Parse the response body.
-            var dataObjects = response.Content.ReadAsStringAsync().Result; 
+            var dataObjects = response.Content.ReadAsStringAsync().Result;
             // TODO: PARSE RESPONSE
             return dataObjects;
         }

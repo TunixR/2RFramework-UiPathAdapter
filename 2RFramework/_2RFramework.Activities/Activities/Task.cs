@@ -1,12 +1,11 @@
+using _2RFramework.Activities.Properties;
+using _2RFramework.Activities.Utilities;
+using _2RFramework.Models;
 using System;
 using System.Activities;
 using System.Collections.Generic;
 using System.ComponentModel;
-using _2RFramework.Models;
 using System.Linq;
-using _2RFramework.Activities.Properties;
-using _2RFramework.Activities.Utilities;
-using Newtonsoft.Json;
 using UiPath.Shared.Activities.Localization;
 using Activity = System.Activities.Activity;
 

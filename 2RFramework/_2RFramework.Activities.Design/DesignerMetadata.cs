@@ -1,8 +1,8 @@
+using _2RFramework.Activities.Design.Designers;
+using _2RFramework.Activities.Design.Properties;
 using System.Activities.Presentation.Metadata;
 using System.ComponentModel;
 using System.ComponentModel.Design;
-using _2RFramework.Activities.Design.Designers;
-using _2RFramework.Activities.Design.Properties;
 
 namespace _2RFramework.Activities.Design
 {
