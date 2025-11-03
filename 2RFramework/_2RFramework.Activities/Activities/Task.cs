@@ -27,7 +27,7 @@ public class Task : NativeActivity
     [LocalizedCategory(nameof(Resources.Common_Category))]
     [DisplayName("Task Name")]
     [Description("Name of the task")]
-    public InArgument<string> TaskName { get; set; }
+    public InArgument<String> TaskName { get; set; } = new();
 
     /// <summary>
     ///     Collection of activities that will be executed by this task.
@@ -121,7 +121,7 @@ public class Task : NativeActivity
         };
 
         string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT");
-        var response = TaskUtils.CallRecoveryAPI(message, apiEndpoint, null);
+        var response = TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null);
 
         // TODO: parse activity to continue from and changes to robot
 
