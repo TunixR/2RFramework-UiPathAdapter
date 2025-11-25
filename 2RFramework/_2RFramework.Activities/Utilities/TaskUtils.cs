@@ -1,12 +1,19 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Activities;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Net.WebSockets;
 using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Activity = System.Activities.Activity;
+using System.Drawing;
+
 
 namespace _2RFramework.Activities.Utilities;
 
@@ -157,31 +164,109 @@ internal static class TaskUtils
         return workflowVariables;
     }
 
-    public static object CallRecoveryAPI(object message, string uri, params object[]? args)
+    public static async Task<object> CallRecoveryAPIAsync(object message, string uri, params object[]? args)
     {
-        HttpClient client = new();
-        client.BaseAddress = new Uri(uri);
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
+        // Convert http/https to ws(s) if needed
+        if (uri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            uri = "ws://" + uri.Substring("http://".Length);
+        else if (uri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            uri = "wss://" + uri.Substring("https://".Length);
 
-        var content = JsonConvert.SerializeObject(message);
-        var buffer = System.Text.Encoding.UTF8.GetBytes(content);
-        var byteContent = new ByteArrayContent(buffer);
-        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        using var cts = new CancellationTokenSource();
+        using var ws = new ClientWebSocket();
 
-        HttpResponseMessage response = client.PostAsync(uri, byteContent).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
-        client.Dispose();
-        if (response.IsSuccessStatusCode)
+        try
         {
-            // Parse the response body.
-            var dataObjects = response.Content.ReadAsStringAsync().Result;
-            // TODO: PARSE RESPONSE
-            return dataObjects;
+            await ws.ConnectAsync(new Uri(uri), cts.Token).ConfigureAwait(false);
+
+            // Send the initial JSON message
+            var content = JsonConvert.SerializeObject(message);
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            await ws.SendAsync(new ArraySegment<byte>(contentBytes), WebSocketMessageType.Text, true, cts.Token).ConfigureAwait(false);
+
+            var buffer = new byte[8192]; // 8 KB buffer
+
+            while (ws.State == WebSocketState.Open)
+            {
+                using var ms = new MemoryStream();
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token).ConfigureAwait(false);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cts.Token).ConfigureAwait(false);
+                        return new { Type = "closed" };
+                    }
+
+                    ms.Write(buffer, 0, result.Count);
+                } while (!result.EndOfMessage);
+
+                ms.Position = 0;
+
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                    using var reader = new StreamReader(ms, Encoding.UTF8);
+                    var messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    JObject? json;
+                    try
+                    {
+                        json = JObject.Parse(messageText);
+                    }
+                    catch (JsonException)
+                    {
+                        // Not JSON — return raw text
+                        continue;
+                    }
+
+                    var typeToken = json["type"] ?? json["Type"];
+                    var type = typeToken?.ToString()?.ToLowerInvariant();
+
+                    if (type == "done")
+                    {
+                        return json;
+                    }
+                    else if (type == "code")
+                    {
+                        // TODO: implement handling for "code" messages
+                        // Leave blank for user logic
+                    }
+                    else if (type == "screenshot")
+                    {
+                        var pngBytes = CaptureScreenPng();
+                        if (pngBytes.Length > 0)
+                            await ws.SendAsync(new ArraySegment<byte>(pngBytes), WebSocketMessageType.Binary, true, cts.Token).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return new { Type = "closed" };
         }
-        else
+        finally
         {
-            // TODO: HALT ROBOT EXECUTION AND LOG ERROR
-            throw new Exception("API call failed with status code: " + response.StatusCode);
+            try
+            {
+                if (ws.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closing", CancellationToken.None).ConfigureAwait(false);
+            }
+            catch { }
         }
+    }
+
+    private static byte[] CaptureScreenPng()
+    {
+        try
+        {
+            Image screen = Pranas.ScreenshotCapture.TakeScreenshot(true);
+
+            using (var ms = new MemoryStream())
+            {
+                screen.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                return ms.ToArray();
+            }
+        }
+        catch { return Array.Empty<byte>(); }
     }
 }

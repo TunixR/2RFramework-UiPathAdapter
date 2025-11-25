@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36511.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_2RFramework", "_2RFramework", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UiPath.Shared.Activities.Design", "Shared\UiPath.Shared.Activities.Design\UiPath.Shared.Activities.Design.shproj", "{DF9C43F0-ADD3-4FBF-995E-84B92F9CBF25}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_2RFramework.Test", "2RFramework\_2RFramework.Test\_2RFramework.Test.csproj", "{528672FD-A448-1F57-1BEA-9182F90351B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_2RFramework.Activities.Tests", "2RFramework\_2RFramework.Activities.Tests\_2RFramework.Activities.Tests.csproj", "{49AFBF87-EFEE-F282-5C22-ED95391B5E4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{528672FD-A448-1F57-1BEA-9182F90351B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{528672FD-A448-1F57-1BEA-9182F90351B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{528672FD-A448-1F57-1BEA-9182F90351B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49AFBF87-EFEE-F282-5C22-ED95391B5E4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49AFBF87-EFEE-F282-5C22-ED95391B5E4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49AFBF87-EFEE-F282-5C22-ED95391B5E4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49AFBF87-EFEE-F282-5C22-ED95391B5E4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +58,7 @@ Global
 		{4546856D-EA50-45C6-9419-EEEACB5A80AA} = {1C9CA449-2279-4C93-A7DD-454F2EDB399D}
 		{DF9C43F0-ADD3-4FBF-995E-84B92F9CBF25} = {1C9CA449-2279-4C93-A7DD-454F2EDB399D}
 		{528672FD-A448-1F57-1BEA-9182F90351B6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{49AFBF87-EFEE-F282-5C22-ED95391B5E4E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7BF298C7-9A31-48FC-893A-B4560941C6DF}

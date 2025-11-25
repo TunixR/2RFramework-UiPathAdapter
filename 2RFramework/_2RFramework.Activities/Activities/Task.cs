@@ -85,7 +85,7 @@ public class Task : NativeActivity
     /// <param name="faultContext"></param>
     /// <param name="propagatedException"></param>
     /// <param name="propagatedFrom"></param>
-    private void OnFaulted(NativeActivityFaultContext faultContext, Exception propagatedException,
+    async private void OnFaulted(NativeActivityFaultContext faultContext, Exception propagatedException,
         ActivityInstance propagatedFrom)
     {
         var taskNameValue = TaskName.Get(faultContext);
@@ -121,7 +121,9 @@ public class Task : NativeActivity
         };
 
         string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT");
-        var response = TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null);
+        Console.WriteLine($"Calling Recovery API at: {apiEndpoint}");
+        var response = await TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null);
+        Console.WriteLine($"Recovery API response: {response}");
 
         // TODO: parse activity to continue from and changes to robot
 

@@ -1,21 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0-windows</TargetFrameworks>
 		<RootNamespace>_2RFramework.Activities</RootNamespace>
 		<AssemblyName>_2RFramework.Activities</AssemblyName>
     <PackageId>_2RFramework.Activities.Implementation</PackageId>
+	<UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DocumentationFile>bin\$(Configuration)\_2RFramework.Activities.xml</DocumentationFile>
-    <AssemblyVersion>1.0.29.104</AssemblyVersion>
-    <FileVersion>1.0.29.104</FileVersion>
+    <AssemblyVersion>1.0.32.112</AssemblyVersion>
+    <FileVersion>1.0.32.112</FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Pranas.ScreenshotCapture" Version="1.0.11" />
     <PackageReference Include="System.Activities.Metadata" Version="6.0.0-*" PrivateAssets="All" />
+    <PackageReference Include="System.Windows.Forms" Version="4.0.0" />
     <PackageReference Include="UiPath.Workflow.Runtime" Version="6.0.0-20240401-07" PrivateAssets="All" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\_2RFramework\_2RFramework.csproj" PrivateAssets="All" />

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0-windows</TargetFrameworks>
 		<RootNamespace>_2RFramework</RootNamespace>
 		<AssemblyName>_2RFramework</AssemblyName>
   </PropertyGroup>
@@ -8,8 +8,8 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DocumentationFile>bin\$(Configuration)\_2RFramework.xml</DocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <AssemblyVersion>1.0.6.3</AssemblyVersion>
-    <FileVersion>1.0.6.3</FileVersion>
+    <AssemblyVersion>1.0.7.3</AssemblyVersion>
+    <FileVersion>1.0.7.3</FileVersion>
     <Version>1.0.1</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
