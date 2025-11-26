@@ -4,6 +4,7 @@ using System;
 using System.Activities;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -11,8 +12,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Activity = System.Activities.Activity;
-using System.Drawing;
 
 
 namespace _2RFramework.Activities.Utilities;
@@ -194,11 +195,13 @@ internal static class TaskUtils
                 {
                     result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token).ConfigureAwait(false);
 
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cts.Token).ConfigureAwait(false);
-                        return new { Type = "closed" };
-                    }
+                    // if (result.MessageType == WebSocketMessageType.Close)
+                    //{
+                    //    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cts.Token).ConfigureAwait(false);
+                    //    return new { Type = "closed" };
+                    //}
+
+                    Console.WriteLine($"Received {result.Count} bytes. EndOfMessage: {result.EndOfMessage}, Message Type: {result.MessageType}");
 
                     ms.Write(buffer, 0, result.Count);
                 } while (!result.EndOfMessage);
@@ -209,6 +212,7 @@ internal static class TaskUtils
                 {
                     using var reader = new StreamReader(ms, Encoding.UTF8);
                     var messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    Console.WriteLine($"Received Text Message: {messageText}");
 
                     JObject? json;
                     try
@@ -228,16 +232,29 @@ internal static class TaskUtils
                     {
                         return json;
                     }
-                    else if (type == "code")
+                    else if (type == "action")
                     {
-                        // TODO: implement handling for "code" messages
-                        // Leave blank for user logic
+                        var actionContent = json["content"] as JObject;
+                        Console.WriteLine("Capturing inputs.");
+                        var actionTypeStr = actionContent["action_type"]?.ToString();
+                        var actionInputs = actionContent["action_inputs"] as JObject;
+                        Console.WriteLine($"Captured inputs. Action type: {actionTypeStr}, inputs count: {actionInputs.Count}.");
+                        var success = await Action.Parse(actionTypeStr, actionInputs);
+                        Console.WriteLine("Executed actions");
+                        var responseMessage = new
+                        {
+                            success
+                        };
+                        await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseMessage))), WebSocketMessageType.Text, true, cts.Token).ConfigureAwait(false);
                     }
                     else if (type == "screenshot")
                     {
-                        var pngBytes = CaptureScreenPng();
+                        Console.WriteLine("Capturing screenshot.");
+                        var pngBytes = await CaptureScreenPng();
+                        Console.WriteLine("Captured screenshot.");
                         if (pngBytes.Length > 0)
                             await ws.SendAsync(new ArraySegment<byte>(pngBytes), WebSocketMessageType.Binary, true, cts.Token).ConfigureAwait(false);
+                            Console.WriteLine($"Sent screenshot of {pngBytes.Length} bytes.");
                     }
                 }
             }

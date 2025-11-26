@@ -55,7 +55,7 @@ namespace _2RFramework.Activities.Tests.TaskUtilsTests
             // 3. Send screenshot request {"type":"screenshot"}
             // 4. Receive binary screenshot
             // 5. Send done message {"type":"done","status":"ok","echoInitial":<initialPayload>}
-            await server.RunInteractionAsync(initialPayload);
+            await server.RunScreenshotInteractionAsync(initialPayload);
 
             var result = await callTask.ConfigureAwait(false);
 
@@ -148,7 +148,7 @@ namespace _2RFramework.Activities.Tests.TaskUtilsTests
             }, _cts.Token);
         }
 
-        public async ThreadingTask RunInteractionAsync(object initialPayloadEcho)
+        public async ThreadingTask RunScreenshotInteractionAsync(object initialPayloadEcho)
         {
             // Wait until we have a websocket
             await WaitForWebSocketAsync();

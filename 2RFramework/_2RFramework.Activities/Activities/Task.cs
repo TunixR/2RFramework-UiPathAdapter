@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using UiPath.Shared.Activities.Localization;
 using Activity = System.Activities.Activity;
+using ThreadingTask = System.Threading.Tasks.Task;
 
 namespace _2RFramework.Activities;
 
@@ -85,7 +86,7 @@ public class Task : NativeActivity
     /// <param name="faultContext"></param>
     /// <param name="propagatedException"></param>
     /// <param name="propagatedFrom"></param>
-    async private void OnFaulted(NativeActivityFaultContext faultContext, Exception propagatedException,
+    private void OnFaulted(NativeActivityFaultContext faultContext, Exception propagatedException,
         ActivityInstance propagatedFrom)
     {
         var taskNameValue = TaskName.Get(faultContext);
@@ -122,7 +123,7 @@ public class Task : NativeActivity
 
         string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT");
         Console.WriteLine($"Calling Recovery API at: {apiEndpoint}");
-        var response = await TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null);
+        var response = ThreadingTask.Run(async () => await TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null)).Result;
         Console.WriteLine($"Recovery API response: {response}");
 
         // TODO: parse activity to continue from and changes to robot
