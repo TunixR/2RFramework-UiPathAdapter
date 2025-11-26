@@ -255,18 +255,55 @@ internal static class TaskUtils
         }
     }
 
-    private static byte[] CaptureScreenPng()
+    private async static Task<byte[]> CaptureScreenPng()
     {
         try
         {
-            Image screen = Pranas.ScreenshotCapture.TakeScreenshot(true);
+            Image screen = await ScreenCapture(Screen.PrimaryScreen);
 
             using (var ms = new MemoryStream())
             {
-                screen.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                screen.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return ms.ToArray();
             }
         }
         catch { return Array.Empty<byte>(); }
+    }
+
+    /// <summary>
+    ///     Create screenshot of single display
+    /// </summary>
+    /// <param name="screen"></param>
+    /// <returns></returns>
+    private async static Task<Bitmap> ScreenCapture(Screen screen)
+    {
+        var bounds = screen.Bounds;
+
+        if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
+        {
+            // Trick  to restore original bounds of screen.
+            bounds = new Rectangle(
+                0,
+                0,
+                screen.WorkingArea.Width + screen.WorkingArea.X,
+                screen.WorkingArea.Height + screen.WorkingArea.Y);
+        }
+
+        var pixelFormat = new Bitmap(1, 1, Graphics.FromHwnd(IntPtr.Zero)).PixelFormat;
+
+        var bitmap = new Bitmap(bounds.Width, bounds.Height, pixelFormat);
+
+        using (var graphics = Graphics.FromImage(bitmap))
+        {
+            graphics.CopyFromScreen(
+                bounds.X,
+                bounds.Y,
+                0,
+                0,
+                bounds.Size,
+                CopyPixelOperation.SourceCopy);
+        }
+
+        return bitmap;
     }
 }

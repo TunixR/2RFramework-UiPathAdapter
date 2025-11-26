@@ -15,7 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Pranas.ScreenshotCapture" Version="1.0.11" />
     <PackageReference Include="System.Activities.Metadata" Version="6.0.0-*" PrivateAssets="All" />
     <PackageReference Include="System.Windows.Forms" Version="4.0.0" />
     <PackageReference Include="UiPath.Workflow.Runtime" Version="6.0.0-20240401-07" PrivateAssets="All" />
