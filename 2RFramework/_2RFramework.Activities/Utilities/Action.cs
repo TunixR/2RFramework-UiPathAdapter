@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace _2RFramework.Activities.Utilities
 {
@@ -118,10 +121,6 @@ namespace _2RFramework.Activities.Utilities
         public static Func<uint, INPUT[], int, uint> SendInputFunc { get; set; } = DefaultSendInput;
         /// <summary>Delegate used to map a character to vk/shift info.</summary>
         public static Func<char, short> VkKeyScanFunc { get; set; } = DefaultVkKeyScan;
-        /// <summary>Delegate returning primary screen width (override for deterministic tests).</summary>
-        public static Func<int> ScreenWidthFunc { get; set; } = DefaultScreenWidth;
-        /// <summary>Delegate returning primary screen height.</summary>
-        public static Func<int> ScreenHeightFunc { get; set; } = DefaultScreenHeight;
 
         /// <summary>If true, events are captured and NOT sent to the OS.</summary>
         public static bool CaptureEnabled { get; private set; }
@@ -160,93 +159,92 @@ namespace _2RFramework.Activities.Utilities
 
         private static uint DefaultSendInput(uint n, INPUT[] arr, int cb) => SendInput(n, arr, cb);
         private static short DefaultVkKeyScan(char c) => VkKeyScan(c);
-        private static int DefaultScreenWidth() => System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
-        private static int DefaultScreenHeight() => System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
 
         #endregion
 
         #region Parse entrypoint
 
-        public static bool Parse(string actionTypeStr, Dictionary<string, object> actionInputs)
+        public async static Task<bool> Parse(string actionTypeStr, JObject actionInputs)
         {
             ActionType actionType = GetEnumFromString(actionTypeStr);
             switch (actionType)
             {
                 case ActionType.Hotkey:
-                    return Hotkey((string)actionInputs["hotkey"]);
+                    return await Hotkey((string)actionInputs["hotkey"]);
                 case ActionType.KeyDown:
-                    return KeyDown((string)actionInputs["key"]);
+                    return await KeyDown((string)actionInputs["key"]);
                 case ActionType.KeyUp:
-                    return KeyUp((string)actionInputs["key"]);
+                    return await KeyUp((string)actionInputs["key"]);
                 case ActionType.Type:
-                    return Type((string)actionInputs["content"]);
+                    return await Type((string)actionInputs["content"]);
                 case ActionType.Click:
                     {
-                        var box = (List<object>)actionInputs["box"];
+                        List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                         float x = Convert.ToSingle(box[0]);
                         float y = Convert.ToSingle(box[1]);
-                        return Click(x, y);
+                        Console.WriteLine($"Click at ({x}, {y})");
+                        return await Click(x, y);
                     }
                 case ActionType.LeftClick:
                     {
-                        var box = (List<object>)actionInputs["box"];
+                        List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                         float x = Convert.ToSingle(box[0]);
                         float y = Convert.ToSingle(box[1]);
-                        return LeftClick(x, y);
+                        return await LeftClick(x, y);
                     }
                 case ActionType.DoubleClick:
                     {
-                        var box = (List<object>)actionInputs["box"];
+                        List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                         float x = Convert.ToSingle(box[0]);
                         float y = Convert.ToSingle(box[1]);
-                        return DoubleClick(x, y);
+                        return await DoubleClick(x, y);
                     }
                 case ActionType.RightClick:
                     {
-                        var box = (List<object>)actionInputs["box"];
+                        List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                         float x = Convert.ToSingle(box[0]);
                         float y = Convert.ToSingle(box[1]);
-                        return RightClick(x, y);
+                        return await RightClick(x, y);
                     }
                 case ActionType.Hover:
                     {
-                        var box = (List<object>)actionInputs["box"];
+                        List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                         float x = Convert.ToSingle(box[0]);
                         float y = Convert.ToSingle(box[1]);
-                        return Hover(x, y);
+                        return await Hover(x, y);
                     }
                 case ActionType.Drag:
                     {
-                        var startBox = (List<object>)actionInputs["start_box"];
-                        var endBox = (List<object>)actionInputs["end_box"];
+                        List<float> startBox = actionInputs["start_box"].ToObject<List<float>>();
+                        List<float> endBox = actionInputs["end_box"].ToObject<List<float>>();
                         float startX = Convert.ToSingle(startBox[0]);
                         float startY = Convert.ToSingle(startBox[1]);
                         float endX = Convert.ToSingle(endBox[0]);
                         float endY = Convert.ToSingle(endBox[1]);
-                        return Drag(startX, startY, endX, endY);
+                        return await Drag(startX, startY, endX, endY);
                     }
                 case ActionType.Select:
                     {
-                        var startBox = (List<object>)actionInputs["start_box"];
-                        var endBox = (List<object>)actionInputs["end_box"];
+                        List<float> startBox = actionInputs["start_box"].ToObject<List<float>>();
+                        List<float> endBox = actionInputs["end_box"].ToObject<List<float>>();
                         float startX = Convert.ToSingle(startBox[0]);
                         float startY = Convert.ToSingle(startBox[1]);
                         float endX = Convert.ToSingle(endBox[0]);
                         float endY = Convert.ToSingle(endBox[1]);
-                        return Select(startX, startY, endX, endY);
+                        return await Select(startX, startY, endX, endY);
                     }
                 case ActionType.Scroll:
                     {
                         string direction = (string)actionInputs["direction"];
                         float x = -1;
                         float y = -1;
-                        if (actionInputs.ContainsKey("box"))
+                        if (actionInputs.ContainsKey("start_box"))
                         {
-                            var box = (List<object>)actionInputs["box"];
+                            List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                             x = Convert.ToSingle(box[0]);
                             y = Convert.ToSingle(box[1]);
                         }
-                        return Scroll(direction, x, y);
+                        return await Scroll(direction, x, y);
                     }
                 default:
                     return false;
@@ -257,58 +255,58 @@ namespace _2RFramework.Activities.Utilities
 
         #region High-level keyboard
 
-        private static bool Hotkey(string key)
+        private async static Task<bool> Hotkey(string key)
         {
             var parts = key.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             List<string> keys = new List<string>(parts);
 
             foreach (var k in keys)
-                if (!KeyDown(k))
+                if (!await KeyDown(k))
                     return false;
 
             for (int i = keys.Count - 1; i >= 0; i--)
-                if (!KeyUp(keys[i]))
+                if (!await KeyUp(keys[i]))
                     return false;
 
             return true;
         }
 
-        private static bool KeyDown(string key)
+        private async static Task<bool> KeyDown(string key)
         {
             if (!PyAutoGuiToVk.Map.TryGetValue(key, out ushort vk))
                 return false;
 
-            return SendKeyboardVk(vk, false);
+            return await SendKeyboardVk(vk, false);
         }
 
-        public static bool KeyUp(string key)
+        public async static Task<bool> KeyUp(string key)
         {
             if (!PyAutoGuiToVk.Map.TryGetValue(key, out ushort vk))
                 return false;
 
-            return SendKeyboardVk(vk, true);
+            return await SendKeyboardVk(vk, true);
         }
 
-        private static bool Type(string text)
+        private async static Task<bool> Type(string text)
         {
             foreach (char c in text)
-                if (!TypeChar(c))
+                if (!await TypeChar(c))
                     return false;
             return true;
         }
 
-        private static bool TypeChar(char c)
+        private async static Task<bool> TypeChar(char c)
         {
-            if (!SendKeyboardVk(c, false, true))  // keyDown
+            if (!await SendKeyboardVk(c, false, true))  // keyDown
                 return false;
 
-            if (!SendKeyboardVk(c, true, true))   // keyUp
+            if (!await SendKeyboardVk(c, true, true))   // keyUp
                 return false;
             return true;
         }
 
 
-        private static bool SendKeyboardVk(ushort vk, bool keyUp, bool charMode = false)
+        private async static Task<bool> SendKeyboardVk(ushort vk, bool keyUp, bool charMode = false)
         {
             var input = new INPUT
             {
@@ -350,63 +348,62 @@ namespace _2RFramework.Activities.Utilities
 
         #region High-level mouse
 
-        private static bool Click(float x, float y) => LeftClick(x, y);
+        private async static Task<bool> Click(float x, float y) => await LeftClick(x, y);
 
-        private static bool LeftClick(float x, float y)
+        private async static Task<bool> LeftClick(float x, float y)
         {
-            if (!Hover(x, y)) return false;
-            if (!SendMouseInput(MOUSEEVENTF_LEFTDOWN)) return false;
-            if (!SendMouseInput(MOUSEEVENTF_LEFTUP)) return false;
+            if (!await Hover(x, y)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_LEFTDOWN)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_LEFTUP)) return false;
             return true;
         }
 
-        private static bool DoubleClick(float x, float y) => LeftClick(x, y) && LeftClick(x, y);
+        private async static Task<bool> DoubleClick(float x, float y) => await LeftClick(x, y) && await LeftClick(x, y);
 
-        private static bool RightClick(float x, float y)
+        private async static Task<bool> RightClick(float x, float y)
         {
-            if (!Hover(x, y)) return false;
-            if (!SendMouseInput(MOUSEEVENTF_RIGHTDOWN)) return false;
-            if (!SendMouseInput(MOUSEEVENTF_RIGHTUP)) return false;
+            if (!await Hover(x, y)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_RIGHTDOWN)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_RIGHTUP)) return false;
             return true;
         }
 
-        private static bool Hover(float x, float y)
+        private async static Task<bool> Hover(float x, float y)
         {
             int ax = ToAbsoluteX(x);
             int ay = ToAbsoluteY(y);
-            return SendMouseInput(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, ax, ay);
+            return await SendMouseInput(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, ax, ay);
         }
 
-        private static bool Drag(float startX, float startY, float endX, float endY)
+        private async static Task<bool> Drag(float startX, float startY, float endX, float endY)
         {
-            if (!Hover(startX, startY)) return false;
-            if (!SendMouseInput(MOUSEEVENTF_LEFTDOWN)) return false;
+            if (!await Hover(startX, startY)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_LEFTDOWN)) return false;
 
             int ax = ToAbsoluteX(endX);
             int ay = ToAbsoluteY(endY);
-            if (!SendMouseInput(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, ax, ay)) return false;
-
-            if (!SendMouseInput(MOUSEEVENTF_LEFTUP)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, ax, ay)) return false;
+            if (!await SendMouseInput(MOUSEEVENTF_LEFTUP)) return false;
             return true;
         }
 
-        private static bool Select(float startX, float startY, float endX, float endY) =>
-            Drag(startX, startY, endX, endY);
+        private async static Task<bool> Select(float startX, float startY, float endX, float endY) =>
+            await Drag(startX, startY, endX, endY);
 
-        private static bool Scroll(string direction, float x = -1, float y = -1)
+        private async static Task<bool> Scroll(string direction, float x = -1, float y = -1)
         {
             if (x >= 0 && y >= 0)
-                if (!Hover(x, y))
+                if (!await Hover(x, y))
                     return false;
 
             int amount = 120;
             direction = direction.ToLowerInvariant();
             return direction switch
             {
-                "up" => SendMouseInput(MOUSEEVENTF_WHEEL, data: amount),
-                "down" => SendMouseInput(MOUSEEVENTF_WHEEL, data: -amount),
-                "left" => SendMouseInput(MOUSEEVENTF_HWHEEL, data: -amount),
-                "right" => SendMouseInput(MOUSEEVENTF_HWHEEL, data: amount),
+                "up" => await SendMouseInput(MOUSEEVENTF_WHEEL, data: amount),
+                "down" => await SendMouseInput(MOUSEEVENTF_WHEEL, data: -amount),
+                "left" => await SendMouseInput(MOUSEEVENTF_HWHEEL, data: -amount),
+                "right" => await SendMouseInput(MOUSEEVENTF_HWHEEL, data: amount),
                 _ => false
             };
         }
@@ -415,7 +412,7 @@ namespace _2RFramework.Activities.Utilities
 
         #region Low-level send helpers
 
-        private static bool SendMouseInput(uint flags, int x = 0, int y = 0, int data = 0)
+        private async static Task<bool> SendMouseInput(uint flags, int x = 0, int y = 0, int data = 0)
         {
             var input = new INPUT
             {
@@ -451,14 +448,12 @@ namespace _2RFramework.Activities.Utilities
 
         private static int ToAbsoluteX(float px)
         {
-            int w = ScreenWidthFunc();
-            return (int)(px * 65535.0f / w);
+            return (int)(px * 65535.0f);
         }
 
         private static int ToAbsoluteY(float py)
         {
-            int h = ScreenHeightFunc();
-            return (int)(py * 65535.0f / h);
+            return (int)(py * 65535.0f);
         }
 
         private static void Capture(string kind, Dictionary<string, object> data)
