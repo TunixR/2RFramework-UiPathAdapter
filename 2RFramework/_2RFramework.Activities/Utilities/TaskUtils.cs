@@ -195,11 +195,11 @@ internal static class TaskUtils
                 {
                     result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token).ConfigureAwait(false);
 
-                    // if (result.MessageType == WebSocketMessageType.Close)
-                    //{
-                    //    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cts.Token).ConfigureAwait(false);
-                    //    return new { Type = "closed" };
-                    //}
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cts.Token).ConfigureAwait(false);
+                        return new { Type = "closed" };
+                    }
 
                     Console.WriteLine($"Received {result.Count} bytes. EndOfMessage: {result.EndOfMessage}, Message Type: {result.MessageType}");
 
