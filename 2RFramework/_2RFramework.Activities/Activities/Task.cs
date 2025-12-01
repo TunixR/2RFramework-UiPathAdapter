@@ -1,6 +1,8 @@
+using _2RFramework.Activities.Activities;
 using _2RFramework.Activities.Properties;
 using _2RFramework.Activities.Utilities;
 using _2RFramework.Models;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Activities;
 using System.Collections.Generic;
@@ -69,8 +71,10 @@ public class Task : NativeActivity
     private void ScheduleNext(NativeActivityContext context)
     {
         if (_currentActivityIndex < Activities.Count)
+        {
             // Schedule the activity with handlers for completion and faulting
             context.ScheduleActivity(Activities[_currentActivityIndex], OnCompleted, OnFaulted);
+        }
     }
 
     #endregion
@@ -102,7 +106,7 @@ public class Task : NativeActivity
             .Select(a => TaskUtils.GetActivityInfo(a, workflowVariables))
             .ToList();
         var failedActivity = TaskUtils.GetActivityInfo(Activities[_currentActivityIndex], workflowVariables);
-        var reversedAct = Activities;
+        var reversedAct = new List<Activity>(Activities);
         reversedAct.Reverse();
         var futureActivities = reversedAct.Take(_currentActivityIndex)
             .Select(a => TaskUtils.GetActivityInfo(a, workflowVariables))
@@ -123,17 +127,35 @@ public class Task : NativeActivity
 
         string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT");
         Console.WriteLine($"Calling Recovery API at: {apiEndpoint}");
-        var response = ThreadingTask.Run(async () => await TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null)).Result;
-        Console.WriteLine($"Recovery API response: {response}");
+        var response = ThreadingTask.Run(() => TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null)).GetAwaiter().GetResult();
+        Console.WriteLine($"Recovery API response: {JObject.FromObject(response).ToString()}");
 
-        // TODO: parse activity to continue from and changes to robot
-
-        // Mark the exception as handled
-        faultContext.HandleFault();
-
-        // Move to the next activity
-        _currentActivityIndex++;
-        ScheduleNext(faultContext);
+        if ((string)response["type"] == "error")
+        {
+            throw new ApplicationException("Error could not be resolved by Recovery API.");
+        } else if ((string)response["type"] == "done")
+        {
+            var content = response["content"];
+            // We grab now success and from. If success is true, we continue from the specified future activity index
+            var success = (bool)content.GetType().GetProperty("success").GetValue(content, null);
+            var from = (int)content.GetType().GetProperty("continue_from_step").GetValue(content, null);
+            if (success)
+            {
+             // Mark the exception as handled
+             faultContext.HandleFault();
+             _currentActivityIndex = _currentActivityIndex + 0; // Here we do not increment currentActivityIndex because OnCompleted will be called
+            }
+            else
+            {
+                var ogErr = propagatedException.Message;
+                throw new ApplicationException($"Error could not be resolved by Recovery API. Original Error: {ogErr}");
+            }
+        }
+        else
+        {
+            var ogErr = propagatedException.Message;
+            throw new ApplicationException($"Unknown response type from Recovery API. Original Error: {ogErr}");
+        }
     }
 
     private void OnCompleted(NativeActivityContext context, ActivityInstance completedInstance)

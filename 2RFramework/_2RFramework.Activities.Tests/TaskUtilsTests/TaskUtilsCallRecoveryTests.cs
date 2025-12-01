@@ -82,9 +82,8 @@ namespace _2RFramework.Activities.Tests.TaskUtilsTests
             // Result assertions
             Assert.NotNull(result);
             Assert.IsType<JObject>(result);
-            var resultJson = (JObject)result;
-            Assert.Equal("done", resultJson["type"]?.ToString());
-            Assert.Equal("ok", resultJson["status"]?.ToString());
+            Assert.Equal("done", result["type"]?.ToString());
+            Assert.Equal("ok", result["status"]?.ToString());
         }
 
         // Utility: obtain an available TCP port

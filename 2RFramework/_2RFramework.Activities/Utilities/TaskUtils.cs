@@ -165,7 +165,7 @@ internal static class TaskUtils
         return workflowVariables;
     }
 
-    public static async Task<object> CallRecoveryAPIAsync(object message, string uri, params object[]? args)
+    public static async Task<Dictionary<string, object?>> CallRecoveryAPIAsync(object message, string uri, params object[]? args)
     {
         // Convert http/https to ws(s) if needed
         if (uri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
@@ -198,7 +198,7 @@ internal static class TaskUtils
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cts.Token).ConfigureAwait(false);
-                        return new { Type = "closed" };
+                        return new Dictionary<string, object?> { { "type", "closed" } };
                     }
 
                     Console.WriteLine($"Received {result.Count} bytes. EndOfMessage: {result.EndOfMessage}, Message Type: {result.MessageType}");
@@ -228,9 +228,11 @@ internal static class TaskUtils
                     var typeToken = json["type"] ?? json["Type"];
                     var type = typeToken?.ToString()?.ToLowerInvariant();
 
-                    if (type == "done")
+                    if (type == "done" || type == "error")
                     {
-                        return json;
+                        //close conn
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", cts.Token).ConfigureAwait(false);
+                        return json.ToObject<Dictionary<string, object?>>();
                     }
                     else if (type == "action")
                     {
@@ -253,20 +255,24 @@ internal static class TaskUtils
                         var pngBytes = await CaptureScreenPng();
                         Console.WriteLine("Captured screenshot.");
                         if (pngBytes.Length > 0)
+                        {
                             await ws.SendAsync(new ArraySegment<byte>(pngBytes), WebSocketMessageType.Binary, true, cts.Token).ConfigureAwait(false);
                             Console.WriteLine($"Sent screenshot of {pngBytes.Length} bytes.");
+                        }
                     }
                 }
             }
 
-            return new { Type = "closed" };
+            return new Dictionary<string, object?> { { "type", "closed" } };
         }
         finally
         {
             try
             {
                 if (ws.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                {
                     await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closing", CancellationToken.None).ConfigureAwait(false);
+                }
             }
             catch { }
         }
