@@ -1,4 +1,3 @@
-using _2RFramework.Activities.Activities;
 using _2RFramework.Activities.Properties;
 using _2RFramework.Activities.Utilities;
 using _2RFramework.Models;
@@ -108,9 +107,10 @@ public class Task : NativeActivity
         var failedActivity = TaskUtils.GetActivityInfo(Activities[_currentActivityIndex], workflowVariables);
         var reversedAct = new List<Activity>(Activities);
         reversedAct.Reverse();
-        var futureActivities = reversedAct.Take(_currentActivityIndex)
+        var futureActivities = reversedAct.Take(Activities.Count() - _currentActivityIndex - 1) // Exclude current failed activity
             .Select(a => TaskUtils.GetActivityInfo(a, workflowVariables))
             .ToList();
+        futureActivities.Reverse();
 
         var message = new
         {
@@ -141,9 +141,15 @@ public class Task : NativeActivity
             var from = (int)content.GetType().GetProperty("continue_from_step").GetValue(content, null);
             if (success)
             {
-             // Mark the exception as handled
-             faultContext.HandleFault();
-             _currentActivityIndex = _currentActivityIndex + 0; // Here we do not increment currentActivityIndex because OnCompleted will be called
+            // Mark the exception as handled
+            faultContext.HandleFault();
+            if (from < 0 || from + _currentActivityIndex > Activities.Count())
+                {
+                    _currentActivityIndex = Activities.Count(); // End the task execution
+                } else
+                {
+                    _currentActivityIndex = _currentActivityIndex + from; // Here we do not increment currentActivityIndex by one extra because OnCompleted will be called
+                }
             }
             else
             {
