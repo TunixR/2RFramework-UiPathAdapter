@@ -201,8 +201,6 @@ internal static class TaskUtils
                         return new Dictionary<string, object?> { { "type", "closed" } };
                     }
 
-                    Console.WriteLine($"Received {result.Count} bytes. EndOfMessage: {result.EndOfMessage}, Message Type: {result.MessageType}");
-
                     ms.Write(buffer, 0, result.Count);
                 } while (!result.EndOfMessage);
 
@@ -212,7 +210,6 @@ internal static class TaskUtils
                 {
                     using var reader = new StreamReader(ms, Encoding.UTF8);
                     var messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
-                    Console.WriteLine($"Received Text Message: {messageText}");
 
                     JObject? json;
                     try
@@ -237,12 +234,9 @@ internal static class TaskUtils
                     else if (type == "action")
                     {
                         var actionContent = json["content"] as JObject;
-                        Console.WriteLine("Capturing inputs.");
                         var actionTypeStr = actionContent["action_type"]?.ToString();
                         var actionInputs = actionContent["action_inputs"] as JObject;
-                        Console.WriteLine($"Captured inputs. Action type: {actionTypeStr}, inputs count: {actionInputs.Count}.");
                         var success = await Action.Parse(actionTypeStr, actionInputs);
-                        Console.WriteLine("Executed actions");
                         var responseMessage = new
                         {
                             success
@@ -251,13 +245,10 @@ internal static class TaskUtils
                     }
                     else if (type == "screenshot")
                     {
-                        Console.WriteLine("Capturing screenshot.");
                         var pngBytes = await CaptureScreenPng();
-                        Console.WriteLine("Captured screenshot.");
                         if (pngBytes.Length > 0)
                         {
                             await ws.SendAsync(new ArraySegment<byte>(pngBytes), WebSocketMessageType.Binary, true, cts.Token).ConfigureAwait(false);
-                            Console.WriteLine($"Sent screenshot of {pngBytes.Length} bytes.");
                         }
                     }
                 }

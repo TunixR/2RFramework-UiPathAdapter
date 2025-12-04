@@ -137,8 +137,8 @@ public class Task : NativeActivity
         {
             var content = response["content"];
             // We grab now success and from. If success is true, we continue from the specified future activity index
-            var success = (bool)content.GetType().GetProperty("success").GetValue(content, null);
-            var from = (int)content.GetType().GetProperty("continue_from_step").GetValue(content, null);
+            var success = (bool)content.GetType().GetProperty("First").GetValue(content, null).GetType().GetProperty("Value").GetValue(content.GetType().GetProperty("First").GetValue(content, null), null).GetType().GetProperty("Value").GetValue(content.GetType().GetProperty("First").GetValue(content, null).GetType().GetProperty("Value").GetValue(content.GetType().GetProperty("First").GetValue(content, null), null), null);
+            var from = Int32.Parse(content.GetType().GetProperty("Last").GetValue(content, null).GetType().GetProperty("Value").GetValue(content.GetType().GetProperty("Last").GetValue(content, null), null).GetType().GetProperty("Value").GetValue(content.GetType().GetProperty("Last").GetValue(content, null).GetType().GetProperty("Value").GetValue(content.GetType().GetProperty("Last").GetValue(content, null), null), null).ToString());
             if (success)
             {
             // Mark the exception as handled

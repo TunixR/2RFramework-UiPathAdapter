@@ -182,7 +182,6 @@ namespace _2RFramework.Activities.Utilities
                         List<float> box = actionInputs["start_box"].ToObject<List<float>>();
                         float x = Convert.ToSingle(box[0]);
                         float y = Convert.ToSingle(box[1]);
-                        Console.WriteLine($"Click at ({x}, {y})");
                         return await Click(x, y);
                     }
                 case ActionType.LeftClick:
