@@ -38,6 +38,8 @@ namespace _2RFramework.Activities.Utilities
         Select,
         [EnumMember(Value = "scroll")]
         Scroll,
+        [EnumMember(Value = "wait")]
+        Wait,
     }
 
     /// <summary>
@@ -244,6 +246,11 @@ namespace _2RFramework.Activities.Utilities
                             y = Convert.ToSingle(box[1]);
                         }
                         return await Scroll(direction, x, y);
+                    }
+                case ActionType.Wait:
+                    {
+                        await System.Threading.Tasks.Task.Delay(5_000); // wait for 5 seconds
+                        return true;
                     }
                 default:
                     return false;
