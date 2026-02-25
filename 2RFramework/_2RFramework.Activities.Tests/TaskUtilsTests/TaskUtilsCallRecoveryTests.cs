@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -47,7 +48,7 @@ namespace _2RFramework.Activities.Tests.TaskUtilsTests
             };
 
             // Act
-            var callTask = Utilities.TaskUtils.CallRecoveryAPIAsync(initialPayload, wsClientUri, null);
+            var callTask = Utilities.TaskUtils.CallRecoveryAPIAsync(initialPayload, wsClientUri, "", null);
 
             // Server sequence (runs concurrently):
             // 1. Accept connection
@@ -72,16 +73,14 @@ namespace _2RFramework.Activities.Tests.TaskUtilsTests
             // We still assert the attempt happened; optionally assert length > 0 when available.
 
             Assert.True(server.ScreenshotBytes?.Length > 0);
-            // Heuristic: PNG header starts with 0x89 0x50 0x4E 0x47
-            Assert.True(server.ScreenshotBytes[0] == 0x89 &&
-                        server.ScreenshotBytes[1] == 0x50 &&
-                        server.ScreenshotBytes[2] == 0x4E &&
-                        server.ScreenshotBytes[3] == 0x47,
-                "Screenshot bytes do not look like a PNG header.");
+            // Heuristic: JPEG header starts with 0xFF 0xD8, PNG header starts with 0x89 0x50 0x4E 0x47
+            Assert.True(server.ScreenshotBytes[0] == 0xFF &&
+                        server.ScreenshotBytes[1] == 0xD8,
+                "Screenshot bytes do not look like a JPEG header.");
 
             // Result assertions
             Assert.NotNull(result);
-            Assert.IsType<JObject>(result);
+            Assert.IsType<Dictionary<string, object>>(result);
             Assert.Equal("done", result["type"]?.ToString());
             Assert.Equal("ok", result["status"]?.ToString());
         }
