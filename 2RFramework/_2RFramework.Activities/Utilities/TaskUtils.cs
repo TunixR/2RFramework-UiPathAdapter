@@ -165,7 +165,7 @@ internal static class TaskUtils
         return workflowVariables;
     }
 
-    public static async Task<Dictionary<string, object?>> CallRecoveryAPIAsync(object message, string uri, params object[]? args)
+    public static async Task<Dictionary<string, object?>> CallRecoveryAPIAsync(object message, string uri, string key, params object[]? args)
     {
         // Convert http/https to ws(s) if needed
         if (uri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
@@ -175,6 +175,7 @@ internal static class TaskUtils
 
         using var cts = new CancellationTokenSource();
         using var ws = new ClientWebSocket();
+        ws.Options.SetRequestHeader("X-ROBOT-KEY", key);
 
         try
         {

@@ -126,8 +126,9 @@ public class Task : NativeActivity
         };
 
         string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT");
+        string apiKey = Environment.GetEnvironmentVariable("X_ROBOT_KEY");
         Console.WriteLine($"Calling Recovery API at: {apiEndpoint}");
-        var response = ThreadingTask.Run(() => TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, null)).GetAwaiter().GetResult();
+        var response = ThreadingTask.Run(() => TaskUtils.CallRecoveryAPIAsync(message, apiEndpoint, apiKey, null)).GetAwaiter().GetResult();
         Console.WriteLine($"Recovery API response: {JObject.FromObject(response).ToString()}");
 
         if ((string)response["type"] == "error")
