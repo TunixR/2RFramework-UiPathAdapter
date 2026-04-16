@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
@@ -267,6 +268,36 @@ internal static class TaskUtils
                 }
             }
             catch { }
+        }
+    }
+
+    
+    public static async void SendRecoveryStatusMessage(string recoveryId, bool success)
+    {
+
+        string apiEndpoint = Environment.GetEnvironmentVariable("API_ENDPOINT_FINAL") + "/" + recoveryId;
+        string apiKey = Environment.GetEnvironmentVariable("X_ROBOT_KEY");
+
+        var body = new
+        {
+            success
+        };
+
+        using var httpClient = new System.Net.Http.HttpClient();
+        httpClient.DefaultRequestHeaders.Add("X-ROBOT-KEY", apiKey);
+        var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+        try
+        {
+            var res = await httpClient.PostAsync(apiEndpoint, content).ConfigureAwait(false);
+            if (res.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine($"There was a problem while communicating the final recovery result: {res.StatusCode} - {await res.Content.ReadAsStringAsync().ConfigureAwait(false)}");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"There was a problem while communicating the final recovery result: {e}");
         }
     }
 
